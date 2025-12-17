@@ -31,51 +31,51 @@ def extract_features(url):
         path = parsed.path
         query = parsed.query
         
-        # 1. having_IP_Address: -1 if IP address in URL, 1 otherwise
+        # 1. having_ip_address: -1 if IP address in URL, 1 otherwise
         ip_pattern = re.compile(
             r'(([01]?\d\d?|2[0-4]\d|25[0-5])\.){3}([01]?\d\d?|2[0-4]\d|25[0-5])'
         )
-        features['having_IP_Address'] = -1 if ip_pattern.search(url) else 1
+        features['having_ip_address'] = -1 if ip_pattern.search(url) else 1
         
-        # 2. URL_Length: -1 if length >= 54, 0 if 54 > length >= 75, 1 otherwise
-        url_length = len(url)
-        if url_length < 54:
-            features['URL_Length'] = 1
-        elif url_length <= 75:
-            features['URL_Length'] = 0
+        # 2. url_length: -1 if length >= 54, 0 if 54 > length >= 75, 1 otherwise
+        url_len = len(url)
+        if url_len < 54:
+            features['url_length'] = 1
+        elif url_len <= 75:
+            features['url_length'] = 0
         else:
-            features['URL_Length'] = -1
+            features['url_length'] = -1
         
-        # 3. Shortining_Service: -1 if using URL shortening service, 1 otherwise
+        # 3. shortining_service: -1 if using URL shortening service, 1 otherwise
         shortening_services = ['bit.ly', 'goo.gl', 'tinyurl', 't.co', 'ow.ly', 'is.gd']
-        features['Shortining_Service'] = -1 if any(service in url for service in shortening_services) else 1
+        features['shortining_service'] = -1 if any(service in url for service in shortening_services) else 1
         
-        # 4. having_At_Symbol: -1 if @ in URL, 1 otherwise
-        features['having_At_Symbol'] = -1 if '@' in url else 1
+        # 4. having_at_symbol: -1 if @ in URL, 1 otherwise
+        features['having_at_symbol'] = -1 if '@' in url else 1
         
         # 5. double_slash_redirecting: -1 if // appears after position 7, 1 otherwise
         double_slash_pos = url.find('//')
         features['double_slash_redirecting'] = -1 if double_slash_pos > 7 else 1
         
-        # 6. Prefix_Suffix: -1 if - in domain, 1 otherwise
-        features['Prefix_Suffix'] = -1 if '-' in domain else 1
+        # 6. prefix_suffix: -1 if - in domain, 1 otherwise
+        features['prefix_suffix'] = -1 if '-' in domain else 1
         
-        # 7. having_Sub_Domain: Count of dots in domain
+        # 7. having_sub_domain: Count of dots in domain
         dot_count = domain.count('.')
         if dot_count == 1:
-            features['having_Sub_Domain'] = 1
+            features['having_sub_domain'] = 1
         elif dot_count == 2:
-            features['having_Sub_Domain'] = 0
+            features['having_sub_domain'] = 0
         else:
-            features['having_Sub_Domain'] = -1
+            features['having_sub_domain'] = -1
         
-        # 8. SSLfinal_State: Check for HTTPS
+        # 8. sslfinal_state: Check for HTTPS
         if parsed.scheme == 'https':
-            features['SSLfinal_State'] = 1
+            features['sslfinal_state'] = 1
         else:
-            features['SSLfinal_State'] = -1
+            features['sslfinal_state'] = -1
         
-        # 9. Domain_registeration_length: Try to get WHOIS info
+        # 9. domain_registration_length: Try to get WHOIS info
         try:
             domain_info = whois.whois(domain)
             if domain_info.expiration_date:
@@ -90,54 +90,54 @@ def extract_features(url):
                     creation = domain_info.creation_date
                 
                 age = (expiration - creation).days
-                features['Domain_registeration_length'] = 1 if age >= 365 else -1
+                features['domain_registration_length'] = 1 if age >= 365 else -1
             else:
-                features['Domain_registeration_length'] = -1
+                features['domain_registration_length'] = -1
         except:
-            features['Domain_registeration_length'] = -1
+            features['domain_registration_length'] = -1
         
-        # 10. Favicon: Simplified check (assume -1 for external, 1 for same domain)
-        features['Favicon'] = 1
+        # 10. favicon: Simplified check (assume 1 for same domain)
+        features['favicon'] = 1
         
         # 11. port: -1 if non-standard port, 1 otherwise
         features['port'] = -1 if parsed.port and parsed.port not in [80, 443] else 1
         
-        # 12. HTTPS_token: -1 if "https" in domain part, 1 otherwise
-        features['HTTPS_token'] = -1 if 'https' in domain else 1
+        # 12. https_token: -1 if "https" in domain part, 1 otherwise
+        features['https_token'] = -1 if 'https' in domain else 1
         
-        # 13. Request_URL: Simplified (assume 1 for now)
-        features['Request_URL'] = 1
+        # 13. request_url: Simplified (assume 1 for now)
+        features['request_url'] = 1
         
-        # 14. URL_of_Anchor: Simplified (assume 1 for now)
-        features['URL_of_Anchor'] = 1
+        # 14. url_of_anchor: Simplified (assume 1 for now)
+        features['url_of_anchor'] = 1
         
-        # 15. Links_in_tags: Simplified (assume 1 for now)
-        features['Links_in_tags'] = 1
+        # 15. links_in_tags: Simplified (assume 1 for now)
+        features['links_in_tags'] = 1
         
-        # 16. SFH (Server Form Handler): Simplified
-        features['SFH'] = 1
+        # 16. sfh (Server Form Handler): Simplified
+        features['sfh'] = 1
         
-        # 17. Submitting_to_email: -1 if mailto in URL, 1 otherwise
-        features['Submitting_to_email'] = -1 if 'mailto:' in url else 1
+        # 17. submitting_to_email: -1 if mailto in URL, 1 otherwise
+        features['submitting_to_email'] = -1 if 'mailto:' in url else 1
         
-        # 18. Abnormal_URL: Simplified check
-        features['Abnormal_URL'] = 1
+        # 18. abnormal_url: Simplified check
+        features['abnormal_url'] = 1
         
-        # 19. Redirect: Count of // in URL
+        # 19. redirect: Count of // in URL
         redirect_count = url.count('//')
-        features['Redirect'] = -1 if redirect_count > 1 else 1
+        features['redirect'] = -1 if redirect_count > 1 else 1
         
         # 20. on_mouseover: Simplified (assume 1)
         features['on_mouseover'] = 1
         
-        # 21. RightClick: Simplified (assume 1)
-        features['RightClick'] = 1
+        # 21. rightclick: Simplified (assume 1)
+        features['rightclick'] = 1
         
-        # 22. popUpWidnow: Simplified (assume 1)
-        features['popUpWidnow'] = 1
+        # 22. popupwindow: Simplified (assume 1)
+        features['popupwindow'] = 1
         
-        # 23. Iframe: Simplified (assume 1)
-        features['Iframe'] = 1
+        # 23. iframe: Simplified (assume 1)
+        features['iframe'] = 1
         
         # 24. age_of_domain: Try to get domain age
         try:
@@ -154,23 +154,23 @@ def extract_features(url):
         except:
             features['age_of_domain'] = -1
         
-        # 25. DNSRecord: Simplified
-        features['DNSRecord'] = 1
+        # 25. dnsrecord: Simplified
+        features['dnsrecord'] = 1
         
         # 26. web_traffic: Simplified
         features['web_traffic'] = 1
         
-        # 27. Page_Rank: Simplified
-        features['Page_Rank'] = 1
+        # 27. page_rank: Simplified
+        features['page_rank'] = 1
         
-        # 28. Google_Index: Simplified
-        features['Google_Index'] = 1
+        # 28. google_index: Simplified
+        features['google_index'] = 1
         
-        # 29. Links_pointing_to_page: Simplified
-        features['Links_pointing_to_page'] = 1
+        # 29. links_pointing_to_page: Simplified
+        features['links_pointing_to_page'] = 1
         
-        # 30. Statistical_report: Simplified
-        features['Statistical_report'] = 1
+        # 30. statistical_report: Simplified
+        features['statistical_report'] = 1
         
     except Exception as e:
         print(f"Error extracting features: {e}")

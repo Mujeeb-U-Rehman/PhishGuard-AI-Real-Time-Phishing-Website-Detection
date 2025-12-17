@@ -35,11 +35,11 @@ env/
 *~
 .DS_Store
 
-# Model files (if large)
-*.joblib
-*.pkl
-*.h5
-*.model
+# Model files (train locally - too large for git)
+backend/*.joblib
+backend/*.pkl
+backend/*.h5
+backend/*.model
 
 # Jupyter Notebook
 .ipynb_checkpoints
