@@ -174,7 +174,38 @@ def extract_features(url):
         
     except Exception as e:
         print(f"Error extracting features: {e}")
-        # Return default safe values
-        features = {f'feature_{i}': 1 for i in range(30)}
+        # Return default safe values with correct feature names
+        features = {
+            'having_ip_address': 1,
+            'url_length': 1,
+            'shortining_service': 1,
+            'having_at_symbol': 1,
+            'double_slash_redirecting': 1,
+            'prefix_suffix': 1,
+            'having_sub_domain': 1,
+            'sslfinal_state': 1,
+            'domain_registration_length': 1,
+            'favicon': 1,
+            'port': 1,
+            'https_token': 1,
+            'request_url': 1,
+            'url_of_anchor': 1,
+            'links_in_tags': 1,
+            'sfh': 1,
+            'submitting_to_email': 1,
+            'abnormal_url': 1,
+            'redirect': 1,
+            'on_mouseover': 1,
+            'rightclick': 1,
+            'popupwindow': 1,
+            'iframe': 1,
+            'age_of_domain': 1,
+            'dnsrecord': 1,
+            'web_traffic': 1,
+            'page_rank': 1,
+            'google_index': 1,
+            'links_pointing_to_page': 1,
+            'statistical_report': 1
+        }
     
     return features

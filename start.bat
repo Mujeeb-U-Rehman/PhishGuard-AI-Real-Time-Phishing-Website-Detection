@@ -13,6 +13,19 @@ if errorlevel 1 (
     exit /b 1
 )
 
+REM Check if we're in the correct directory
+if not exist "README.md" (
+    echo Error: Please run this script from the PhishGuard-AI project root directory.
+    pause
+    exit /b 1
+)
+
+if not exist "backend\" (
+    echo Error: Backend directory not found. Please run from project root.
+    pause
+    exit /b 1
+)
+
 REM Navigate to backend directory
 cd backend
 

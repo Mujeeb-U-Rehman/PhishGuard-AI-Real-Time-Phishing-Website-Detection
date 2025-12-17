@@ -13,6 +13,12 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
+# Check if we're in the correct directory
+if [ ! -f "README.md" ] || [ ! -d "backend" ]; then
+    echo "Error: Please run this script from the PhishGuard-AI project root directory."
+    exit 1
+fi
+
 # Navigate to backend directory
 cd backend
 
