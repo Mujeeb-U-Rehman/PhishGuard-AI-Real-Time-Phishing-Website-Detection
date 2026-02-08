@@ -19,8 +19,18 @@ def _fetch_page(url, timeout=5):
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                           'AppleWebKit/537.36 (KHTML, like Gecko) '
                           'Chrome/120.0.0.0 Safari/537.36'
-        }, verify=False, allow_redirects=True)
+        }, allow_redirects=True)
         return response
+    except requests.exceptions.SSLError:
+        try:
+            response = requests.get(url, timeout=timeout, headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                              'AppleWebKit/537.36 (KHTML, like Gecko) '
+                              'Chrome/120.0.0.0 Safari/537.36'
+            }, verify=False, allow_redirects=True)
+            return response
+        except Exception:
+            return None
     except Exception:
         return None
 
@@ -101,9 +111,10 @@ def extract_features(url):
         # 4. having_at_symbol: -1 if @ in URL, 1 otherwise
         features['having_at_symbol'] = -1 if '@' in url else 1
 
-        # 5. double_slash_redirecting: -1 if // after position 7, 1 otherwise
+        # 5. double_slash_redirecting: -1 if // after protocol, 1 otherwise
+        protocol_end = url.find('://') + 3 if '://' in url else 0
         features['double_slash_redirecting'] = (
-            -1 if url[7:].find('//') >= 0 else 1
+            -1 if url[protocol_end:].find('//') >= 0 else 1
         )
 
         # 6. prefix_suffix: -1 if - in domain, 1 otherwise
@@ -259,7 +270,7 @@ def extract_features(url):
                 sfh_suspicious = False
                 for form in forms:
                     action = form.get('action', '')
-                    if not action or action == '' or action == 'about:blank':
+                    if not action or action == 'about:blank':
                         sfh_suspicious = True
                         break
                     if action.startswith('http'):
@@ -313,10 +324,11 @@ def extract_features(url):
 
         # 21. rightclick: Check if right-click is disabled
         if page_text:
+            page_lower = page_text.lower()
             features['rightclick'] = (
-                -1 if ('event.button==2' in page_text or
-                       'event.button == 2' in page_text or
-                       'contextmenu' in page_text.lower())
+                -1 if ('event.button==2' in page_lower or
+                       'event.button == 2' in page_lower or
+                       'contextmenu' in page_lower)
                 else 1
             )
         else:
@@ -406,11 +418,12 @@ def extract_features(url):
         # 29. links_pointing_to_page: Count external links
         if soup:
             links = soup.find_all('a')
-            external_links = sum(
-                1 for a in links
-                if a.get('href', '').startswith('http') and
-                hostname not in _get_domain(a.get('href', ''))
-            )
+            external_links = 0
+            for a in links:
+                href = a.get('href', '')
+                if href.startswith('http'):
+                    if hostname not in _get_domain(href):
+                        external_links += 1
             if external_links == 0:
                 features['links_pointing_to_page'] = -1
             elif external_links <= 2:
@@ -426,9 +439,10 @@ def extract_features(url):
             r'login', r'signin', r'verify', r'account',
             r'update', r'secure', r'banking', r'confirm'
         ]
+        url_lower = url.lower()
         suspicious_count = sum(
             1 for p in suspicious_patterns
-            if re.search(p, url.lower())
+            if re.search(p, url_lower)
         )
         features['statistical_report'] = -1 if suspicious_count >= 2 else 1
 
